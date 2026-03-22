@@ -651,7 +651,7 @@ const Dashboard: React.FC<{ clients: Client[] }> = ({ clients }) => {
                   {apt.title}
                 </div>
                 <div style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
-                  {apt.client} â¢ {apt.date} at {apt.time}
+                  {apt.client} • {apt.date} at {apt.time}
                 </div>
               </div>
               <div style={{
@@ -693,7 +693,7 @@ const Dashboard: React.FC<{ clients: Client[] }> = ({ clients }) => {
                   {task.title}
                 </div>
                 <div style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
-                  {task.client} â¢ Due {task.dueDate}
+                  {task.client} • Due {task.dueDate}
                 </div>
               </div>
               <div style={{
@@ -886,7 +886,7 @@ const ClientsPage: React.FC<ClientsPageProps> = ({ clients, onAddClient }) => {
                 {client.practice}
               </div>
               <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '8px' }}>
-                {client.cases} case{client.cases !== 1 ? 's' : ''} â¢ {client.email}
+                {client.cases} case{client.cases !== 1 ? 's' : ''} • {client.email}
               </div>
               <div style={{
                 marginTop: '12px',
@@ -1188,7 +1188,7 @@ const SchedulePage: React.FC<{ appointments: Appointment[] }> = ({ appointments 
                       {apt.title}
                     </div>
                     <div style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
-                      {apt.client} â¢ {apt.duration > 0 ? `${apt.duration}min` : 'Deadline'} â¢ {apt.type}
+                      {apt.client} • {apt.duration > 0 ? `${apt.duration}min` : 'Deadline'} • {apt.type}
                     </div>
                   </div>
                 </div>
@@ -1514,7 +1514,7 @@ const TasksPage: React.FC = () => {
                 {task.title}
               </div>
               <div style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
-                {task.client} â¢ {task.category} â¢ Due {task.dueDate}
+                {task.client} • {task.category} • Due {task.dueDate}
               </div>
             </div>
 
