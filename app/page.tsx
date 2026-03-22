@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Types
 interface Client {
@@ -457,6 +457,61 @@ const ZapIcon = () => (
   </svg>
 );
 
+const MenuIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="3" y1="12" x2="21" y2="12" />
+    <line x1="3" y1="6" x2="21" y2="6" />
+    <line x1="3" y1="18" x2="21" y2="18" />
+  </svg>
+);
+
+
+// Global hover styles
+const GlobalStyles = () => (
+  <style>{`
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .lf-card { transition: all 0.2s ease; }
+    .lf-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .lf-btn-primary { transition: all 0.2s ease; }
+    .lf-btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
+    .lf-nav-btn { transition: all 0.15s ease; }
+    .lf-nav-btn:hover { background-color: rgba(99,102,241,0.1) !important; }
+    .lf-clickable { transition: all 0.15s ease; }
+    .lf-clickable:hover { background-color: rgba(99,102,241,0.04) !important; border-color: rgba(99,102,241,0.3) !important; }
+    .lf-skeleton { background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+    .lf-fade-in { animation: fadeIn 0.3s ease forwards; }
+    @media (max-width: 768px) {
+      .lf-mobile-hide { display: none !important; }
+      .lf-mobile-stack { grid-template-columns: 1fr !important; }
+    }
+  `}</style>
+);
+
+const SkeletonLoader = () => (
+  <div style={{ padding: '24px' }}>
+    <div className="lf-skeleton" style={{ width: '200px', height: '32px', marginBottom: '24px' }} />
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' }}>
+      {[1,2,3,4].map(i => <div key={i} className="lf-skeleton" style={{ height: '90px' }} />)}
+    </div>
+    {[1,2,3].map(i => <div key={i} className="lf-skeleton" style={{ height: '72px', marginBottom: '8px' }} />)}
+  </div>
+);
+
+const EmptyState = ({ icon, title, subtitle }: { icon: React.ReactNode; title: string; subtitle: string }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', color: 'var(--color-text-tertiary)' }}>
+    <div style={{ width: '48px', height: '48px', marginBottom: '16px', opacity: 0.4 }}>{icon}</div>
+    <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '8px', color: 'var(--color-text-secondary)' }}>{title}</div>
+    <div style={{ fontSize: '14px' }}>{subtitle}</div>
+  </div>
+);
+
 // Component: Sidebar
 interface SidebarProps {
   collapsed: boolean;
@@ -532,8 +587,11 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, currentPage, onPageChange 
                 display: 'flex',
                 alignItems: 'center',
                 gap: '12px',
+                fontSize: '14px',
+                fontWeight: '500',
                 transition: 'all 0.2s ease'
               }}
+              className={isActive ? '' : 'lf-nav-btn'}
             >
               <div style={{ width: '24px', height: '24px' }}>
                 <Icon />
@@ -597,7 +655,7 @@ const Dashboard: React.FC<{ clients: Client[] }> = ({ clients }) => {
 
   return (
     <div>
-      <h1 style={{ marginBottom: '24px', color: 'var(--color-text-primary)' }}>Dashboard</h1>
+      <h1 style={{ marginBottom: '24px', color: 'var(--color-text-primary)', fontSize: '28px', fontWeight: '700', letterSpacing: '-0.02em' }}>Dashboard</h1>
 
       {/* Stats Cards */}
       <div style={{
@@ -609,6 +667,7 @@ const Dashboard: React.FC<{ clients: Client[] }> = ({ clients }) => {
         {stats.map((stat) => (
           <div
             key={stat.label}
+            className="lf-card"
             style={{
               backgroundColor: 'var(--color-background-secondary)',
               border: '1px solid var(--color-border-tertiary)',
@@ -781,7 +840,7 @@ const ClientsPage: React.FC<ClientsPageProps> = ({ clients, onAddClient }) => {
   });
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', minHeight: '100vh' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: selectedClient ? '1fr 1fr' : '1fr', gap: '24px', minHeight: '100vh' }}>
       {/* Client List */}
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
@@ -866,10 +925,13 @@ const ClientsPage: React.FC<ClientsPageProps> = ({ clients, onAddClient }) => {
 
         {/* Client List */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {filteredClients.map((client) => (
+          {filteredClients.length === 0 ? (
+            <EmptyState icon={<UsersIcon />} title="No clients found" subtitle={searchTerm ? 'Try adjusting your search' : 'No clients match this filter'} />
+          ) : filteredClients.map((client) => (
             <div
               key={client.id}
               onClick={() => setSelectedClient(client)}
+              className="lf-clickable"
               style={{
                 backgroundColor: selectedClient?.id === client.id ? '#eef2ff' : 'var(--color-background-secondary)',
                 border: selectedClient?.id === client.id ? '2px solid #6366f1' : '1px solid var(--color-border-tertiary)',
@@ -1095,7 +1157,7 @@ const SchedulePage: React.FC<{ appointments: Appointment[] }> = ({ appointments 
       {/* Week View */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(7, 1fr)',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))',
         gap: '8px',
         marginBottom: '32px'
       }}>
@@ -1188,7 +1250,7 @@ const SchedulePage: React.FC<{ appointments: Appointment[] }> = ({ appointments 
                       {apt.title}
                     </div>
                     <div style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
-                      {apt.client} • {apt.duration > 0 ? `${apt.duration}min` : 'Deadline'} • {apt.type}
+                      {apt.client} • {apt.type}{apt.duration > 0 ? ` • ${apt.duration}min` : ''}
                     </div>
                   </div>
                 </div>
@@ -1475,7 +1537,9 @@ const TasksPage: React.FC = () => {
 
       {/* Task List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {filteredTasks.map((task) => (
+        {filteredTasks.length === 0 ? (
+          <EmptyState icon={<CheckboxIcon />} title="No tasks found" subtitle={statusFilter === 'All' ? 'Create a task to get started' : 'No tasks with status "' + statusFilter + '"'} />
+        ) : filteredTasks.map((task) => (
           <div
             key={task.id}
             style={{
@@ -1730,7 +1794,7 @@ const MessagesPage: React.FC = () => {
   const [remindersEnabled, setRemindersEnabled] = useState(true);
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '24px' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
       {/* Quick Templates */}
       <div>
         <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', color: 'var(--color-text-primary)' }}>
@@ -2411,6 +2475,19 @@ const SettingsPage: React.FC = () => {
 export default function LegalFlowApp() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [currentPage, setCurrentPage] = useState('dashboard');
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    const timer = setTimeout(() => setIsLoading(false), 600);
+    return () => { window.removeEventListener('resize', checkMobile); clearTimeout(timer); };
+  }, []);
+
+  useEffect(() => { setMobileMenuOpen(false); }, [currentPage]);
 
   const renderPage = () => {
     switch (currentPage) {
@@ -2439,41 +2516,47 @@ export default function LegalFlowApp() {
       color: 'var(--color-text-primary)',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     }}>
+      <GlobalStyles />
+
+      {/* Mobile Overlay */}
+      {isMobile && mobileMenuOpen && (
+        <div onClick={() => setMobileMenuOpen(false)} style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 40
+        }} />
+      )}
+
       {/* Sidebar */}
-      <Sidebar
-        collapsed={sidebarCollapsed}
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-      />
+      <div style={{
+        position: isMobile ? 'fixed' : 'relative',
+        zIndex: isMobile ? 50 : 'auto',
+        transform: isMobile && !mobileMenuOpen ? 'translateX(-100%)' : 'translateX(0)',
+        transition: 'transform 0.3s ease',
+        height: '100vh'
+      }}>
+        <Sidebar
+          collapsed={isMobile ? false : sidebarCollapsed}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+        />
+      </div>
 
       {/* Main Content */}
       <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden'
+        flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', width: '100%'
       }}>
         {/* Top Bar */}
         <div style={{
           backgroundColor: 'var(--color-background-secondary)',
           borderBottom: '1px solid var(--color-border-tertiary)',
-          padding: '16px 24px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
+          padding: isMobile ? '12px 16px' : '16px 24px',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center'
         }}>
           <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              width: '24px',
-              height: '24px',
-              color: 'var(--color-text-secondary)'
-            }}
+            onClick={() => isMobile ? setMobileMenuOpen(!mobileMenuOpen) : setSidebarCollapsed(!sidebarCollapsed)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', width: '24px', height: '24px', color: 'var(--color-text-secondary)' }}
           >
-            {sidebarCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+            {isMobile ? <MenuIcon /> : (sidebarCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />)}
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -2501,12 +2584,12 @@ export default function LegalFlowApp() {
         </div>
 
         {/* Page Content */}
-        <div style={{
+        <div className="lf-fade-in" style={{
           flex: 1,
           overflowY: 'auto',
-          padding: '24px'
+          padding: isMobile ? '16px' : '24px'
         }}>
-          {renderPage()}
+          {isLoading ? <SkeletonLoader /> : renderPage()}
         </div>
       </div>
     </div>
